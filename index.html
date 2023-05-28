@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Parcel Sandbox</title>
+  <meta charset="UTF-8" />
+</head>
+
+<body>
+  <style>
+    :root {
+      --list-final-y: 240px;
+      --list-initial-y: 0px;
+      --button-final-y: 0px;
+      --button-initial-y: -240px;
+      --default-cubic-bezier: cubic-bezier(0.250, 0.460, 0.450, 0.940);
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    ul {
+      list-style: none;
+      display: grid;
+      width: 100%;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 2rem;
+      grid-auto-rows: 240px;
+    }
+
+    li {
+      background-color: pink;
+      position: relative;
+      border-radius: .5rem;
+    }
+
+    .clicked {
+      border: 2px dashed pink;
+      background-color: transparent;
+      box-sizing: border-box;
+    }
+
+    .package__container {
+      position: absolute;
+      bottom: 0;
+    }
+
+    #package,
+    #package[data-status='closed'] {
+      height: 100px;
+      width: 100px;
+      position: absolute;
+      bottom: 2rem;
+      right: 2rem;
+      box-shadow: 0 0 0 2px pink;
+      border-radius: .5rem;
+      display: flex;
+      z-index: 2;
+      background-color: white;
+    }
+
+    #package[data-status="closing"] {
+      animation: slide-down-button .6s var(--default-cubic-bezier) forwards;
+    }
+
+    #package[data-status="opening"] {
+      animation: slide-up-button .4s var(--default-cubic-bezier) forwards
+    }
+
+    #package[data-status="opened"] {
+      transform: translateY(calc(var(--button-initial-y) - 1rem));
+    }
+
+    #package svg {
+      height: 50%;
+      width: 50%;
+      margin: auto;
+      color: red;
+    }
+
+    #package .__wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: transparent;
+      position: absolute;
+      height: 1rem;
+      top: -0.5rem;
+      right: -0.5rem;
+      background-color: pink;
+      padding: 0.5rem;
+      border-radius: 50%;
+      color: red
+    }
+
+    #package .__wrapper p {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: end;
+      height: min-content;
+      width: auto;
+    }
+
+    .package-list {
+      height: 240px;
+      width: 400px;
+      position: absolute;
+      visibility: visible;
+      background-color: pink;
+    }
+
+    .package-list[data-status="opened"] {
+      height: 240px;
+      width: 400px;
+      position: absolute;
+      visibility: visible;
+      background-color: pink;
+      bottom: 2rem;
+      right: 2rem;
+    }
+
+    .package-list[data-status="opening"] {
+      bottom: 2rem;
+      right: 2rem;
+      animation: slide-up .5s cubic-bezier(0.250, 0.460, 0.450, 0.940) forwards;
+    }
+
+    .package-list[data-status="closing"] {
+      bottom: 2rem;
+      right: 2rem;
+      animation: slide-down .5s cubic-bezier(0.250, 0.460, 0.450, 0.940) forwards;
+    }
+
+    .package-list[data-status="closed"] {
+      visibility: hidden;
+    }
+
+    @keyframes slide-up {
+      0% {
+        transform: translateY(var(--list-final-y));
+        visibility: hidden;
+      }
+
+      100% {
+        transform: translateY(var(--list-initial-y));
+        visibility: visible;
+      }
+    }
+
+    @keyframes slide-down {
+      0% {
+        transform: translateY(var(--list-initial-y));
+        visibility: visible;
+      }
+
+      100% {
+        transform: translateY(var(--list-final-y));
+        visibility: hidden;
+      }
+    }
+
+    @keyframes slide-up-button {
+      0% {
+        transform: translateY(var(--button-final-y));
+      }
+
+      100% {
+        transform: translateY(calc(var(--button-initial-y) - 1rem));
+      }
+    }
+
+    @keyframes slide-down-button {
+      0% {
+        transform: translateY(var(--button-initial-y));
+      }
+
+      100% {
+        transform: translateY(var(--button-final-y));
+      }
+    }
+  </style>
+
+  <div class="container">
+    <ul>
+      <li id="1"></li>
+      <li id="2"></li>
+      <li id="3"></li>
+      <li id="4"></li>
+      <li id="5"></li>
+      <li id="6"></li>
+      <li id="7"></li>
+      <li id="8"></li>
+    </ul>
+    <div id="package" data-status="closed">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+      </svg>
+      <div class="__wrapper">
+        <p id="quantity">0</p>
+      </div>
+    </div>
+    <div class="package-list" data-status="closed"></div>
+  </div>
+
+</body>
+
+<script>
+  const animationTime = 1000 * 0.5;
+  let LIST_STATUS_PROPS = {
+    opened: "opened",
+    opening: "opening",
+    closing: "closing",
+    closed: "closed"
+  }
+  let detailsListStatus = LIST_STATUS_PROPS.closed;
+  const container = document.querySelector('.container');
+  const ul = document.querySelector('ul');
+  const liList = document.querySelectorAll('li');
+  const packageElement = document.querySelector('#package');
+  let clickedIds = [];
+
+  const action = (li, index) => {
+    const initialRect = li.getBoundingClientRect();
+    const finalRect = packageElement.getBoundingClientRect();
+
+    const deltaX = finalRect.left - initialRect.left;
+    const deltaY = finalRect.top - initialRect.top;
+
+    const deltaWidth = finalRect.width / initialRect.width;
+    const deltaHeight = finalRect.height / initialRect.height;
+
+    const animationTime = 1000;
+
+    // Slide animation
+    li.animate([{
+      transform: 'translate(-100% 0) scale(1)'
+    },
+    {
+      transform: 'translate(-100%, -40px) scale(1)'
+    },
+    {
+      transform: 'translate(-100%, 0) scale(1)'
+    }
+    ], {
+      duration: 2000,
+      fill: 'forwards',
+    });
+
+    // INVERT ANIMATION
+    li.animate([{
+      transform: 'translate(-100% 0) scale(1)',
+    },
+    {
+      transform: `translate(${deltaX - finalRect.width}px, ${deltaY - finalRect.height}px) scale(0)`,
+    }
+    ], {
+      delay: animationTime * 0.2,
+      duration: animationTime * 0.25,
+      fill: 'forwards',
+      easing: 'cubic-bezier(0,0,0.32,1)',
+    });
+
+    packageElement.animate([
+      {
+        transform: 'rotate(0deg)'
+      },
+      {
+        transform: 'rotate(15deg)'
+      },
+      {
+        transform: 'rotate(-15deg)'
+      },
+      {
+        transform: 'rotate(0deg)'
+      }
+    ], {
+      delay: 500,
+      duration: 450,
+      fill: 'forwards',
+    });
+
+    setTimeout(() => {
+      li.remove();
+      const fragment = document.createDocumentFragment();
+      const newElement = document.createElement('li');
+      fragment.appendChild(newElement);
+      newElement.classList.add('clicked');
+      ul.insertBefore(fragment, ul.children[index]);
+      clickedIds.push(index);
+      const p = document.querySelector('#quantity');
+      p.innerText = `${clickedIds.length}`;
+      packageElement.appendChild(p);
+      const wrapper = document.querySelector('#package .__wrapper');
+      wrapper.appendChild(p);
+      wrapper.animate([
+        {
+          transform: 'translateY(-72px) rotate(240deg)'
+        },
+        {
+          transform: 'translateY(0) rotate(0deg)'
+        },
+      ], {
+        duration: 400,
+        fill: 'forwards',
+        easing: 'ease-in'
+      });
+      const packageList = document.querySelector('.package-list');
+      wrapper.style.transform = 'translateY(240px)';
+    }, 1000);
+
+  }
+
+  liList.forEach((li, index) => {
+    li.addEventListener('click', () => action(li, index));
+  });
+
+  function animationFrameAction(element, initialStatus, finalStatus, transactionStatus, duration) {
+    element.setAttribute('data-status', initialStatus);
+    const start = performance.now();
+
+    function step(timestamp) {
+      const progress = timestamp - start;
+      element.setAttribute('data-status', transactionStatus);
+
+      if (progress < duration) {
+        return requestAnimationFrame(step);
+      }
+      return element.setAttribute('data-status', finalStatus);
+    }
+    requestAnimationFrame(step);
+  }
+
+  package.addEventListener('click', () => {
+    const packageList = document.querySelector('.package-list');
+    const currentStatus = packageList.getAttribute('data-status');
+    if (currentStatus === 'closed') {
+      animationFrameAction(
+        packageList,
+        LIST_STATUS_PROPS.closed,
+        LIST_STATUS_PROPS.opened,
+        LIST_STATUS_PROPS.opening,
+        animationTime
+      );
+      animationFrameAction(
+        packageElement,
+        LIST_STATUS_PROPS.closed,
+        LIST_STATUS_PROPS.opened,
+        LIST_STATUS_PROPS.opening,
+        animationTime
+      );
+      return;
+    }
+    animationFrameAction(packageElement,
+      LIST_STATUS_PROPS.opened,
+      LIST_STATUS_PROPS.closed,
+      LIST_STATUS_PROPS.closing,
+      animationTime
+    );
+    animationFrameAction(
+      packageList,
+      LIST_STATUS_PROPS.opened,
+      LIST_STATUS_PROPS.closed,
+      LIST_STATUS_PROPS.closing,
+      animationTime
+    );
+  });
+
+</script>
+
+</html>
