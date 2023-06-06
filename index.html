@@ -255,7 +255,6 @@
     </div>
     <div class="package-list" data-status="closed"></div>
   </div>
-
 </body>
 
 <script>
@@ -285,7 +284,7 @@
       duration: 600,
       fill: 'forwards',
       easing: 'cubic-bezier(0,0,0.32,1)',
-    });
+    })
   }
 
   const shakeElement = (HTMLElement, ySize, negative = false, delay) => {
@@ -323,8 +322,6 @@
     })
   }
 
-
-
   const action = (li, index) => {
     const animationDelay = 1000;
     const animationDuration = 500;
@@ -340,32 +337,28 @@
 
     const animationTime = 1000;
 
-    const isolateAnimationFrame = () => {
-      const start = performance.now();
-      let done = false;
 
-      function step(timestamp, duration = 400) {
-        const progress = timestamp - start;
-        li.style.animation = `shake-animation ${duration}ms cubic-bezier(0,0,0.32,1)`;
+    const asyncRevertAnimationCall = (animationDuration = 500) => {
+      let start = performance.now();
+      const duration = animationDuration;
 
-        if (progress < duration) {
-          return requestAnimationFrame(step);
-        } else {
-          revertAnimation(li, initialRect, finalRect, deltaX, deltaY);
+      return new Promise((resolve, reject) => {
+        function callback(timestamp) {
+          const progress = timestamp - start;
+          li.style.animation = `shake-animation ${duration}ms cubic-bezier(0,0,0.32,1)`;
+          if (progress < duration) {
+            requestAnimationFrame(callback);
+          } else {
+            revertAnimation(li, initialRect, finalRect, deltaX, deltaY);
+            resolve();
+          }
         }
-      }
-      requestAnimationFrame(step);
+        requestAnimationFrame(callback)
+      });
     }
 
-    isolateAnimationFrame();
-
-    if (currentStatus == LIST_STATUS_PROPS.opened) {
-      shakeElement(packageElement, 240 + 16, true, 800);
-    }
-    if (currentStatus == LIST_STATUS_PROPS.closed) {
-      shakeElement(packageElement, 0, false, 800);
-    }
-    setTimeout(() => {
+    const createElementBackground = (HTMLElement) => {
+      HTMLElement.style.animation = `shake-animation ${animationDuration}ms cubic-bezier(0,0,0.32,1)`;
       const fragment = document.createDocumentFragment();
       const newElement = document.createElement('li');
       fragment.appendChild(newElement);
@@ -378,18 +371,38 @@
       const wrapper = document.querySelector('#package .__wrapper');
       wrapper.appendChild(p);
       li.remove();
+      wrapper.animate(
+        [
+          { transform: 'translateY(-80px) rotate(240deg)' },
+          { transform: 'translateY(0%) rotate(0deg)' },
+        ],
+        {
+          duration: 400,
+        }
+      );
+    }
 
-      wrapper.animate([
-        {
-          transform: 'translateY(-80px) rotate(240deg)'
-        },
-        {
-          transform: 'translateY(0%) rotate(0deg)'
-        },
-      ], {
-        duration: 400,
-      });
-    }, 1000)
+    asyncRevertAnimationCall().then(() => {
+      const start = performance.now();
+      const duration = 500;
+
+      function callback(timestamp) {
+        const progress = timestamp - start;
+        if (progress < duration) {
+          requestAnimationFrame(callback);
+        } else {
+          createElementBackground(li)
+        }
+      }
+      requestAnimationFrame(callback)
+    })
+
+    if (currentStatus == LIST_STATUS_PROPS.opened) {
+      shakeElement(packageElement, 240 + 16, true, 800);
+    }
+    if (currentStatus == LIST_STATUS_PROPS.closed) {
+      shakeElement(packageElement, 0, false, 800);
+    }
   }
 
   function animationFrameAction(
